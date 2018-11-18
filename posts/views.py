@@ -13,27 +13,29 @@ def get_posts(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()
                                 ).order_by('-published_date')
     return render(request, "blogposts.html", {'posts': posts})
-    
+
+
 def post_details(request, pk):
     """
-    Create a view of a single post according to an id (pk)
-    and render it using the postdetails.html template.
+    Create a view that return a single
+    Post object based on the post ID and
+    and render it to the 'postdetail.html'
+    template. Or return a 404 error if the
+    post is not found
     """
     post = get_object_or_404(Post, pk=pk)
-    post.views+=1
+    post.views += 1
     post.save()
-    return render(request, "postdetails.html", {'post':post})
-    
+    return render(request, "postdetails.html", {'post': post})
+
+
 def create_or_edit_post(request, pk=None):
-    """
-    A view that allows the creation or edition of a post if id(pk) is not None
-    """
     post = get_object_or_404(Post, pk=pk) if pk else None
     if request.method == "POST":
         form = BlogPostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
-            post= form.save()
+            post = form.save()
             return redirect(post_details, post.pk)
-        else:
-            form = BlogPostForm(instance=post)
-        return render(request, "blogpostform.html", {'form':form})
+    else:
+        form = BlogPostForm(instance=post)
+    return render(request, 'blogpostform.html', {'form': form})
